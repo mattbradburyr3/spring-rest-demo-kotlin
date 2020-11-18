@@ -10,7 +10,7 @@ data class Employee(
         var role: String,
         @Id
         @GeneratedValue
-        private val id: Long? = null) {
+        val id: Long? = null) {
 
         // todo: establish if need to override equals(), hashcode() and to String()
 
