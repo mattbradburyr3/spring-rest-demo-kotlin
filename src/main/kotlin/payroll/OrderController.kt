@@ -43,7 +43,7 @@ class OrderController(val orderRepository: OrderRepository, val assembler: Order
 
     }
 
-    @DeleteMapping("/orders")
+    @DeleteMapping("/orders/{id}/cancel")
     fun cancel(@PathVariable id: Long) : ResponseEntity<Any>{
 
         val order: Order = orderRepository.findByIdOrNull(id) ?: throw OrderNotFoundException(id)
@@ -61,8 +61,23 @@ class OrderController(val orderRepository: OrderRepository, val assembler: Order
 
     }
 
-    @PutMapping("/orders")
-    fun complete(id: Long){}
+    @PutMapping("/orders/{id}/complete")
+    fun complete(@PathVariable id: Long): ResponseEntity<Any>{
+
+        val order: Order = orderRepository.findByIdOrNull(id) ?: throw OrderNotFoundException(id)
+
+        if (order.status == Status.IN_PROGRESS){
+            order.status = Status.COMPLETED
+            return ResponseEntity.ok(assembler.toModel(orderRepository.save(order)))
+        }
+
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .header(HttpHeaders.CONTENT_TYPE)
+                .body((Problem.create()
+                        .withTitle("Method not allowed")
+                        .withDetail("You can't complete an order that is in the ${order.status} status")))
+
+    }
 
 
 }
